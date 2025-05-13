@@ -2,94 +2,103 @@
 @section('title', 'Create Post')
 
 @section('styles')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/easymde/2.18.0/easymde.min.css">
+<link href="https://cdn.jsdelivr.net/npm/easymde@2.20.0/dist/easymde.min.css" rel="stylesheet">
+<style>
 <style>
     .post-creation-container {
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(30, 30, 30, 0.85);
         backdrop-filter: blur(10px);
         border-radius: 15px;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 1px solid #333333;
     }
-    
+
     .editor-toolbar button {
-        color: #495057 !important;
+        color: #e0e0e0 !important;
     }
-    
+
     .editor-toolbar.fullscreen {
-        background-color: white;
+        background-color: #1e1e1e;
     }
-    
+
     .CodeMirror {
         border-radius: 0.25rem;
-        border: 1px solid #ced4da;
+        border: 1px solid #333333;
+        background-color: #121212;
+        color: #e0e0e0;
     }
-    
+
     .markdown-body {
         padding: 20px;
         border-radius: 8px;
-        border: 1px solid #e9ecef;
-        background-color: #fff;
+        border: 1px solid #333333;
+        background-color: #1e1e1e;
+        color: #e0e0e0;
         margin-top: 15px;
     }
-    
+
     .preview-toggle {
         cursor: pointer;
         font-size: 0.9rem;
-        color: #6c757d;
+        color: #a0a0a0;
     }
-    
+
     .image-upload-container {
-        border: 2px dashed #dee2e6;
+        border: 2px dashed #333333;
         border-radius: 5px;
         padding: 20px;
         text-align: center;
         margin-bottom: 15px;
         transition: all 0.3s;
+        background-color: #121212;
+        color: #e0e0e0;
     }
-    
+
     .image-upload-container:hover {
-        border-color: #6c757d;
+        border-color: #a0a0a0;
     }
-    
+
     .hidden {
         display: none;
     }
-    
+
     .image-preview-container {
         margin-top: 15px;
     }
-    
+
     .image-preview {
         max-width: 100%;
         max-height: 300px;
         border-radius: 5px;
     }
-    
+
     .form-label {
         font-weight: 500;
+        color: #e0e0e0;
     }
-    
+
     .post-header {
-        border-bottom: 1px solid rgba(0,0,0,0.1);
+        border-bottom: 1px solid #333333;
         padding-bottom: 15px;
         margin-bottom: 20px;
     }
-    
+
     .page-background {
-        background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+        background: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
         min-height: 100vh;
         padding: 40px 0;
+        color: #e0e0e0;
     }
-    
+
     .btn-primary {
-        background-color: #4e73df;
-        border-color: #4e73df;
+        background-color: #2563eb;
+        border-color: #2563eb;
+        color: #ecf0f1;
     }
-    
+
     .btn-primary:hover {
-        background-color: #2e59d9;
-        border-color: #2653d4;
+        background-color: #1e4ed8;
+        border-color: #1e3abf;
     }
 </style>
 @endsection
@@ -98,8 +107,8 @@
 <div class="page-background">
     <div class="container">
         <div class="row">
-            <div class="col-lg-10 mx-auto">
-                <div class="post-creation-container p-4 p-md-5">
+            <div class="content-inner">
+                <div class="post-creation-container">
                     <div class="post-header">
                         <h1 class="h2 mb-1">Create New Post</h1>
                         <p class="text">Share your thoughts with the world</p>
@@ -173,7 +182,7 @@
                                 </span>
                             </div>
                             <textarea class="form-control @error('content') is-invalid @enderror" 
-                                id="content" name="content" rows="12" required>{{ old('content') }}</textarea>
+                                id="content" name="content" rows="12">{{ old('content') }}</textarea>
                             @error('content')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -198,10 +207,9 @@
     </div>
 </div>
 @endsection
-
 @section('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/easymde/2.18.0/easymde.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/easymde@2.20.0/dist/easymde.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@15.0.11/lib/marked.umd.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize EasyMDE for markdown editing

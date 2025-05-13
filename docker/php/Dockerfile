@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     git \
     libzip-dev \
     libpq-dev \
+    && docker-php-ext-configure gd --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl bcmath gd
 
 

@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
+use Illuminate\Support\Str;
 use League\CommonMark\CommonMarkConverter;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
@@ -54,10 +57,18 @@ class PostController extends Controller
         $validated = $request->validate([
             'title' => 'required|max:255',
             'content' => 'required',
+            'featured_image' => 'nullable|image|max:5120', // 5MB max size
             'featured_image_url' => 'nullable|url',
             'is_published' => 'boolean',
         ]);
         
+        // Process the image if uploaded
+        if ($request->hasFile('featured_image')) {
+            $featured_image_url = $this->processAndStoreImage($request->file('featured_image'));
+            $validated['featured_image_url'] = $featured_image_url;
+        }
+        
+        // Create the post
         $post = Auth::user()->posts()->create($validated);
         
         return redirect()->route('posts.show', $post->uuid)
@@ -69,7 +80,6 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        // Increment view count
         $post->increment('view_count');
         
         // Convert markdown to HTML
@@ -115,9 +125,20 @@ class PostController extends Controller
         $validated = $request->validate([
             'title' => 'required|max:255',
             'content' => 'required',
+            'featured_image' => 'nullable|image|max:5120', // 5MB max size
             'featured_image_url' => 'nullable|url',
             'is_published' => 'boolean',
         ]);
+        
+        if ($request->hasFile('featured_image')) {
+            if ($post->featured_image_url && Str::contains($post->featured_image_url, '/storage/app/public/cached/')) {
+                $oldPath = str_replace(url('/storage/app/public/'), '', $post->featured_image_url);
+                Storage::disk('public')->delete($oldPath);
+            }
+
+            $featured_image_url = $this->processAndStoreImage($request->file('featured_image'));
+            $validated['featured_image_url'] = $featured_image_url;
+        }
         
         $post->update($validated);
         
@@ -130,12 +151,16 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        // Check if user owns the post
         $this->authorize('delete', $post);
+
+        if ($post->featured_image_url && Str::contains($post->featured_image_url, '/storage/app/public/cached/')) {
+            $path = str_replace(url('/storage/app/public/'), '', $post->featured_image_url);
+            Storage::disk('public')->delete($path);
+        }
         
         $post->delete();
         
-        return redirect()->route('posts.index')
+        return redirect()->route('home')
             ->with('success', 'Post deleted successfully!');
     }
     
@@ -149,5 +174,30 @@ class PostController extends Controller
             ->paginate(10);
             
         return view('posts.my-posts', compact('posts'));
+    }
+    
+    /**
+     * Process and store an uploaded image.
+     * 
+     * @param \Illuminate\Http\UploadedFile $image
+     * @return string The URL to the stored image
+     */
+    private function processAndStoreImage($image)
+    {
+        $datePath = now()->format('Y/m/d/H_i_s');
+        $directory = "cached/{$datePath}";
+        $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
+
+        $img = Image::make($image);
+        $img->resize(1200, null, function ($constraint) {
+            $constraint->aspectRatio();
+            $constraint->upsize();
+        });
+        $img->encode($image->getClientOriginalExtension(), 75);
+
+        Storage::disk('public')->makeDirectory($directory);
+        Storage::disk('public')->put($directory . '/' . $filename, $img->stream());
+
+        return asset('storage/' . $directory . '/' . $filename);
     }
 }
